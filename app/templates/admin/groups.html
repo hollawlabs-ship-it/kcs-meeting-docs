@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}연구회 명단{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>연구회 및 회장 명단</h2>
+  <button class="btn btn-primary" id="save">저장</button>
+</div>
+<p class="help">회의자료 "▍연구회(N개) 및 회장 명단" 표와 연구회별 보고 표의 회장·총무 기본값으로 쓰입니다.
+총무가 여러 명이면 줄바꿈으로 구분하세요. <b>신임</b>에 체크하면 성명 뒤에 *가 붙습니다. <b>활성</b>을 끄면 회의자료와 로그인 목록에서 제외됩니다.
+접속코드는 연구회장·총무에게 전달하는 로그인 코드입니다.</p>
+<table class="table editable" id="tbl">
+  <thead><tr><th style="width:2em"></th><th>연구회명</th><th style="width:7em">회장 성명</th><th>회장 소속</th><th>총무(성명(소속), 줄바꿈 구분)</th>
+    <th style="width:3.5em">신임</th><th style="width:3.5em">예비</th><th style="width:3.5em">활성</th><th style="width:8em">접속코드</th><th style="width:7em"></th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<button class="btn" id="add">+ 연구회 추가</button>
+<p class="help">※ 연구회명은 가나다 순으로 정렬해 두는 것이 관례입니다. 행을 끌어서 순서를 바꿀 수 있습니다.</p>
+{% endblock %}
+{% block scripts %}
+<script>
+const groups = {{ groups | tojson }};
+const tbody = document.getElementById('rows');
+function rowHtml(g){
+  const id = g.id || '';
+  return `<tr draggable="true" data-id="${id}">
+    <td class="drag">☰</td>
+    <td><input data-k="name" value="${esc(g.name||'')}"></td>
+    <td><input data-k="chair_name" value="${esc(g.chair_name||'')}"></td>
+    <td><input data-k="chair_affiliation" value="${esc(g.chair_affiliation||'')}"></td>
+    <td><textarea data-k="secretaries" rows="2">${esc(g.secretaries||'')}</textarea></td>
+    <td class="c"><input type="checkbox" data-k="is_new" ${g.is_new?'checked':''}></td>
+    <td class="c"><input type="checkbox" data-k="is_preliminary" ${g.is_preliminary?'checked':''}></td>
+    <td class="c"><input type="checkbox" data-k="active" ${(g.active===undefined||g.active)?'checked':''}></td>
+    <td class="c"><code class="code">${esc(g.access_code||'(저장 후 발급)')}</code>${id?`<br><button class="btn btn-sm regen">재발급</button>`:''}</td>
+    <td class="actions"><button class="btn btn-sm up">▲</button><button class="btn btn-sm down">▼</button><button class="btn btn-sm del">✕</button></td></tr>`;
+}
+groups.forEach(g => tbody.insertAdjacentHTML('beforeend', rowHtml(g)));
+document.getElementById('add').onclick = () => { tbody.insertAdjacentHTML('beforeend', rowHtml({active:true})); tbody.lastElementChild.querySelector('input').focus(); };
+makeSortable(tbody);
+tbody.addEventListener('click', async e => {
+  if (!e.target.classList.contains('regen')) return;
+  const tr = e.target.closest('tr');
+  if (!confirm('접속코드를 재발급하면 기존 코드로는 로그인할 수 없습니다. 계속할까요?')) return;
+  const r = await postJSON(`/admin/groups/${tr.dataset.id}/code`, {});
+  if (r.ok) { tr.querySelector('.code').textContent = r.code; toast('재발급되었습니다.'); }
+});
+document.getElementById('save').onclick = async () => {
+  const out = [...tbody.querySelectorAll('tr')].map(tr => {
+    const o = {id: tr.dataset.id ? Number(tr.dataset.id) : null};
+    tr.querySelectorAll('[data-k]').forEach(i => o[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value);
+    return o; });
+  const removed = groups.filter(g => !out.some(o => o.id === g.id)).map(g => g.name);
+  if (removed.length && !confirm(`다음 연구회를 삭제합니다(해당 연구회의 보고 내용도 삭제됨):\n${removed.join(', ')}\n계속할까요?`)) return;
+  const r = await postJSON('/admin/groups', {groups: out});
+  if (r.ok) { toast('저장되었습니다.'); setTimeout(() => location.reload(), 500); } else toast('저장 실패');
+};
+</script>
+{% endblock %}

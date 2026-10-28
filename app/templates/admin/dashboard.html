@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}회의 목록{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>회의 목록</h2>
+  <form method="post" action="/admin/meetings/new"><button class="btn btn-primary">+ 새 회의 만들기</button></form>
+</div>
+<p class="help">새 회의를 만들면 직전 회의의 안건 순서와 기본 정보가 복사됩니다. 활성 연구회 {{ n_groups }}개.</p>
+<table class="table">
+  <thead><tr><th>회차</th><th>일시</th><th>장소</th><th>입력 상태</th><th>연구회 제출</th><th></th></tr></thead>
+  <tbody>
+  {% for m in meetings %}
+  <tr>
+    <td><a href="/admin/meetings/{{ m.id }}"><strong>제{{ m.term }}-{{ m.seq }}차</strong> {{ m.title }}</a></td>
+    <td>{{ m.date_text or '—' }}</td>
+    <td>{{ m.place or '—' }}</td>
+    <td>{% if m.status == 'open' %}<span class="badge ok">입력 중</span>{% else %}<span class="badge">마감</span>{% endif %}</td>
+    <td><a href="/admin/meetings/{{ m.id }}/reports">제출 {{ m.n_submitted }} / 작성중 {{ m.n_draft }} / 전체 {{ n_groups }}</a></td>
+    <td class="actions">
+      <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}">편집</a>
+      <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/reports">취합</a>
+      <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/doc" target="_blank">미리보기</a>
+      <a class="btn btn-sm btn-primary" href="/admin/meetings/{{ m.id }}/pdf">PDF</a>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6">아직 회의가 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

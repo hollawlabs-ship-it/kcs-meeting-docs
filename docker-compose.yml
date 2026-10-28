@@ -1,0 +1,15 @@
+# 자체 서버(VPS 등)에서: docker compose up -d
+# 이후 리버스 프록시(Caddy/Nginx)로 HTTPS 도메인을 연결하세요.
+services:
+  meeting-docs:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8766:8766"
+    environment:
+      MEETING_DOCS_SECRET: "${MEETING_DOCS_SECRET:-change-me-to-a-long-random-string}"
+      MEETING_DOCS_ADMIN_PASSWORD: "${MEETING_DOCS_ADMIN_PASSWORD:-admin1234}"
+    volumes:
+      - meeting_docs_data:/data
+volumes:
+  meeting_docs_data:

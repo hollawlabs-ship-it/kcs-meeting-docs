@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>{{ doc_title }} {{ doc_subtitle }}</title>
+<style>
+  @page { size: A4; margin: 18mm 0; }
+  :root { --ink: #111; --line: #333; --head-bg: #e9eef4; }
+  html, body { margin: 0; padding: 0; background: #fff; color: var(--ink); }
+  body { font-family: "HCR Batang", "함초롬바탕", "Batang", "바탕", "NanumMyeongjo", "Noto Serif CJK KR", "Malgun Gothic", "맑은 고딕", serif; font-size: 11pt; line-height: 1.55; word-break: keep-all; }
+  .sans, h1, h2, h3, .sec-title, th, .grp-head th, .cover-title, .order-title { font-family: "HCR Dotum", "함초롬돋움", "Malgun Gothic", "맑은 고딕", "NanumGothic", "Noto Sans CJK KR", "Dotum", sans-serif; }
+  .paper { width: 210mm; margin: 0 auto; }
+  .page { padding: 0 20mm; }
+  .pb { page-break-after: always; break-after: page; }
+  .avoid { page-break-inside: avoid; break-inside: avoid; }
+  img { max-width: 100%; }
+  p { margin: 0 0 .35em; }
+  table { border-collapse: collapse; width: 100%; }
+  /* 표지 */
+  .cover { min-height: 250mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .cover .logo { width: 70mm; margin-top: 4mm; }
+  .cover-title { margin-top: 40mm; font-size: 24pt; font-weight: 700; line-height: 1.45; }
+  .cover-title .sub { font-size: 24pt; }
+  .cover-meta { margin-top: 26mm; text-align: left; font-size: 12.5pt; line-height: 1.9; }
+  .cover-meta .lbl { display: inline-block; width: 4.2em; letter-spacing: .2em; }
+  .cover .term-img { margin-top: auto; padding-top: 18mm; width: 150mm; }
+  .cover .term-img img { width: 100%; max-height: 60mm; object-fit: contain; }
+  .cover-note { margin-top: 3mm; font-size: 10pt; color: #555; }
+  /* 진행 순서 */
+  .order .logo { width: 50mm; display: block; }
+  .order-title { text-align: center; font-size: 18pt; font-weight: 700; margin: 18mm 0 10mm; letter-spacing: .3em; }
+  .order-host { text-align: right; font-size: 12pt; margin-bottom: 14mm; line-height: 1.5; }
+  .order-host .nm { font-weight: 700; letter-spacing: .25em; }
+  .order ol { list-style: none; padding: 0; margin: 0 0 0 14mm; font-size: 14pt; line-height: 2.4; }
+  .order ol li .n { display: inline-block; width: 2.2em; font-weight: 700; }
+  /* 본문 */
+  .sec { margin-top: 6mm; }
+  .sec-title { font-size: 15pt; font-weight: 700; margin: 10mm 0 3mm; page-break-after: avoid; }
+  .sec:first-child .sec-title { margin-top: 0; }
+  .bar { font-weight: 700; margin: 3mm 0 1.5mm; padding-left: .4em; border-left: 4px solid #1f4e79; }
+  .bar.indent { margin-left: 4mm; }
+  .tbl th, .tbl td { border: 1px solid var(--line); padding: 2.2mm 2.5mm; vertical-align: middle; font-size: 10.5pt; }
+  .tbl th { background: var(--head-bg); font-weight: 700; text-align: center; letter-spacing: .3em; }
+  .tbl td.c { text-align: center; } .tbl td.nm { text-align: center; letter-spacing: .25em; white-space: nowrap; }
+  .tbl .note td { border: none; font-size: 9.5pt; color: #444; padding: 1mm 0; }
+  .body-html h1, .body-html h2, .body-html h3, .body-html h4 { font-size: 12pt; margin: 4mm 0 1.5mm; }
+  .body-html table { margin: 2mm 0 3mm; } .body-html th, .body-html td { border: 1px solid var(--line); padding: 1.6mm 2.2mm; font-size: 10pt; }
+  .body-html th { background: var(--head-bg); text-align: center; }
+  .body-html ul, .body-html ol { margin: 1mm 0 2mm; padding-left: 1.6em; }
+  .body-html blockquote { margin: 2mm 0; padding: 1mm 3mm; border-left: 3px solid #999; color: #333; }
+  .imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin: 3mm 0; }
+  .imgs.single { grid-template-columns: 1fr; }
+  .imgs figure { margin: 0; text-align: center; page-break-inside: avoid; }
+  .imgs img { max-height: 95mm; width: auto; max-width: 100%; border: 1px solid #ccc; }
+  .imgs figcaption { font-size: 9pt; color: #444; margin-top: 1mm; }
+  /* 연구회 보고 */
+  .grp { margin: 6mm 0 8mm; }
+  .grp-head td, .grp-head th { border: 1px solid var(--line); padding: 1.8mm 2.5mm; font-size: 10.5pt; }
+  .grp-head th { background: var(--head-bg); text-align: left; font-size: 12pt; }
+  .grp-head td.k { width: 14mm; text-align: center; background: #f6f8fa; }
+  .grp-body td { border: 1px solid var(--line); padding: 2.5mm 3mm; vertical-align: top; font-size: 10.5pt; }
+  .grp-body .h { font-weight: 700; margin-bottom: 1.5mm; }
+  .grp-none { padding: 2mm 1mm; font-weight: 700; }
+  .ri { margin: 1.5mm 0 2.5mm; }
+  .ri .t { font-weight: 700; }
+  .ri .sess { margin: 1mm 0 .5mm; font-weight: 700; }
+  .ri .talk { margin: 0 0 .5mm 3mm; }
+  .ri .kv { margin: 0 0 .5mm 3mm; }
+  .ri .desc { margin: .5mm 0 0 3mm; }
+  .ri .desc p { margin: 0 0 .3em; }
+  /* 미리보기 툴바 */
+  .toolbar { position: fixed; top: 0; left: 0; right: 0; background: #1d2433; color: #fff; padding: .5rem 1rem; display: flex; gap: .6rem; align-items: center; z-index: 10;
+             font-family: "Malgun Gothic", "맑은 고딕", sans-serif; font-size: 14px; }
+  .toolbar .sp { flex: 1; } .toolbar a, .toolbar button { color: #fff; background: #0e5a8a; border: 0; border-radius: 6px; padding: .4rem .9rem; font: inherit; cursor: pointer; text-decoration: none; }
+  .toolbar button.alt, .toolbar a.alt { background: #4b5563; }
+  body.mode-preview { background: #e6e9ee; padding: 60px 0 40px; }
+  body.mode-preview .paper { background: #fff; box-shadow: 0 2px 14px rgba(0,0,0,.18); padding: 18mm 0; }
+  body.mode-report_preview { padding: 14mm 0; }
+  @media print { .toolbar { display: none; } body.mode-preview { background: #fff; padding: 0; } body.mode-preview .paper { box-shadow: none; padding: 0; } }
+</style>
+</head>
+<body class="mode-{{ mode }}">
+{% if mode == 'preview' %}
+<div class="toolbar">
+  <strong>{{ doc_title }} {{ doc_subtitle }}</strong> <span style="opacity:.7">미리보기</span>
+  <span class="sp"></span>
+  <a href="/admin/meetings/{{ meeting.id }}/pdf">PDF 저장</a>
+  <button id="print-pdf">인쇄 (PDF)</button>
+  <button class="alt" onclick="window.print()">브라우저 인쇄</button>
+  <a class="alt" href="/admin/meetings/{{ meeting.id }}">편집으로</a>
+</div>
+<script>
+document.getElementById('print-pdf').onclick = async function () {
+  this.disabled = true; this.textContent = 'PDF 생성 중…';
+  try {
+    const r = await fetch('/admin/meetings/{{ meeting.id }}/pdf?inline=1');
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const url = URL.createObjectURL(await r.blob());
+    const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    f.src = url; document.body.appendChild(f);
+    f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { window.open(url, '_blank'); } };
+  } catch (e) { alert('PDF 생성 실패: ' + e.message); }
+  this.disabled = false; this.textContent = '인쇄 (PDF)';
+};
+</script>
+{% endif %}
+
+{%- macro half(sec) -%}
+  {% if sec.intro_html %}<div class="desc body-html">{{ sec.intro_html | safe }}</div>{% endif %}
+  {% for it in sec['items'] %}
+    <div class="ri">
+      <div class="t">○ {{ it.title }}{% set meta = [it.date, it.place] | select | list %}{% if meta %} ({{ meta | join(', ') }}){% endif %}</div>
+      {% if it.type == 'conference' %}
+        {% for s in it.sessions %}
+          <div class="sess">{% if s.name %}[{{ s.name }}]{% endif %}{% if s.moderator %} 사회: {{ s.moderator }}{% endif %}</div>
+          {% for t in s.talks %}
+            <div class="talk">발제 {{ loop.index }}: {{ t.title }}{% if t.presenter %} ― {{ t.presenter }}{% endif %}{% if t.discussant %} / 토론: {{ t.discussant }}{% endif %}</div>
+          {% endfor %}
+          {% if s.roundtable %}<div class="talk">종합토론: {{ s.roundtable }}</div>{% endif %}
+        {% endfor %}
+      {% elif it.type == 'event' %}
+        {% if it.moderator %}<div class="kv">- 사회: {{ it.moderator }}</div>{% endif %}
+        {% if it.presenters %}<div class="kv">- 발제: {{ it.presenters }}</div>{% endif %}
+        {% if it.discussants %}<div class="kv">- 토론: {{ it.discussants }}</div>{% endif %}
+      {% elif it.type == 'publication' %}
+        {% if it.authors %}<div class="kv">- 저자: {{ it.authors }}</div>{% endif %}
+        {% set pub = [it.publisher, it.date] | select | list %}{% if pub %}<div class="kv">- 출판: {{ pub | join(', ') }}</div>{% endif %}
+      {% endif %}
+      {% if it.desc_html %}<div class="desc body-html">{{ it.desc_html | safe }}</div>{% endif %}
+    </div>
+  {% endfor %}
+  {% if sec.image_list %}
+    <div class="imgs {% if sec.image_list | length == 1 %}single{% endif %}">
+      {% for im in sec.image_list %}<figure><img src="{{ im.src }}">{% if im.caption %}<figcaption>{{ im.caption }}</figcaption>{% endif %}</figure>{% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro images(list) -%}
+  {% if list %}<div class="imgs {% if list | length == 1 %}single{% endif %}">
+    {% for im in list %}<figure><img src="{{ im.src }}">{% if im.caption %}<figcaption>{{ im.caption }}</figcaption>{% endif %}</figure>{% endfor %}
+  </div>{% endif %}
+{%- endmacro -%}
+
+<div class="paper">
+{% if mode != 'report_preview' %}
+  <!-- 표지 -->
+  <div class="page cover pb">
+    <img class="logo" src="{{ logo_src }}" alt="{{ settings.society_name }}">
+    <div class="cover-title">{{ doc_title }}<br><span class="sub">{{ doc_subtitle }}</span></div>
+    <div class="cover-meta">
+      <div>□ <span class="lbl">일 시</span>: {{ meeting.date_text }}</div>
+      <div>□ <span class="lbl">장 소</span>: {{ meeting.place }}</div>
+      <div>□ <span class="lbl">방 식</span>: {{ meeting.method }}</div>
+    </div>
+    <div class="term-img"><img src="{{ term_image_src }}" alt="제{{ settings.term }}대">
+      {% if settings.cover_note %}<div class="cover-note">{{ settings.cover_note }}</div>{% endif %}</div>
+  </div>
+
+  <!-- 진행 순서 -->
+  <div class="page order pb">
+    <img class="logo" src="{{ logo_src }}" alt="">
+    <div class="order-title">- 진 행 순 서 -</div>
+    <div class="order-host">진행: <span class="nm">{{ spaced(meeting.host_name) }}</span><br><span style="font-size:11pt">({{ meeting.host_title }})</span></div>
+    <ol>
+      {% for a in agenda %}<li><span class="n">{{ a.num }}.</span>{{ a.title }}</li>{% endfor %}
+    </ol>
+  </div>
+{% endif %}
+
+  <div class="page">
+  {% for a in agenda if mode != 'report_preview' or a.kind == 'reports' %}
+    <div class="sec">
+      {% if mode != 'report_preview' %}<div class="sec-title">{{ a.num }}. {{ a.title }}</div>{% endif %}
+
+      {% if a.kind == 'greeting' %}
+        <div class="bar indent">인사말: {{ spaced(president.name) }}({{ president.title }}, {{ president.affiliation }})</div>
+
+      {% elif a.kind == 'committee' %}
+        <div class="bar indent">위원장: {{ spaced(president.name) }}({{ president.title }}, {{ president.affiliation }})</div>
+        <div class="bar indent" style="margin-top:5mm">집행부 위원</div>
+        <table class="tbl avoid" style="width:80%; margin-left:4mm">
+          <tr><th style="width:24%">직 책</th><th style="width:26%">성 명</th><th>소 속</th></tr>
+          {% for c in committee %}<tr><td class="c">{{ c.role }}</td><td class="nm">{{ spaced(c.name) }}</td><td class="c">{{ c.affiliation }}</td></tr>{% endfor %}
+        </table>
+        <div class="bar indent" style="margin-top:6mm">연구회({{ groups | length }}개) 및 회장 명단</div>
+        <table class="tbl" style="width:92%; margin-left:4mm">
+          <tr><th style="width:40%">연구회명</th><th style="width:22%">성 명</th><th>소 속</th></tr>
+          {% for g in groups %}
+          <tr><td class="c">{{ g.name }}{% if g.is_preliminary %} 연구회(예비){% endif %}</td>
+              <td class="nm">{{ spaced(g.chair_name) }}{% if g.is_new %}*{% endif %}</td><td class="c">{{ g.chair_affiliation }}</td></tr>
+          {% endfor %}
+          <tr class="note"><td colspan="3">※ 연구회명: 가나다 순{% if groups | selectattr('is_new') | list %} &nbsp; *신임연구회장{% endif %}</td></tr>
+        </table>
+
+      {% elif a.kind == 'reports' %}
+        {% for gr in group_reports %}
+          {% set g = gr.group %}{% set d = gr.data %}
+          <div class="grp">
+            <table class="grp-head avoid">
+              <tr><th colspan="2">■ {{ g.name }} 연구회{% if g.is_preliminary %}(예비){% endif %}</th></tr>
+              <tr><td class="k">회장:</td><td>{{ d.chair }}</td></tr>
+              <tr><td class="k">총무:</td><td>{{ (d.secretaries or '') | replace('\n', '<br>') | safe }}</td></tr>
+            </table>
+            {% if d.no_report or not gr.has_content %}
+              <div class="grp-none">▶ 보고내용 없음</div>
+            {% else %}
+              <table class="grp-body">
+                <tr><td><div class="h">1. {{ meeting.past_label }} 활동 내역</div>{{ half(d.past) }}</td></tr>
+                <tr><td><div class="h">2. {{ meeting.plan_label }} 활동 계획</div>{{ half(d.plan) }}</td></tr>
+              </table>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if a.body_html %}<div class="body-html">{{ a.body_html | safe }}</div>{% endif %}
+      {{ images(a.image_list) }}
+    </div>
+  {% endfor %}
+  </div>
+</div>
+</body>
+</html>

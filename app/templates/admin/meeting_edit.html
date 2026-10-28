@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}제{{ m.term }}-{{ m.seq }}차 회의 편집{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>제{{ m.term }}-{{ m.seq }}차 {{ m.title }} 편집</h2>
+  <div>
+    <a class="btn" href="/admin/meetings/{{ m.id }}/reports">연구회 취합 현황</a>
+    <a class="btn" href="/admin/meetings/{{ m.id }}/doc" target="_blank">미리보기 / 인쇄</a>
+    <a class="btn btn-primary" href="/admin/meetings/{{ m.id }}/pdf">PDF 저장</a>
+  </div>
+</div>
+{% if msg == 'saved' %}<p class="alert ok">저장되었습니다.</p>{% endif %}
+
+<div class="card">
+  <h3>기본 정보 (표지 · 진행 순서 페이지)</h3>
+  <form method="post" action="/admin/meetings/{{ m.id }}/info" class="form grid-form">
+    <label>대수 <input name="term" type="number" value="{{ m.term }}"></label>
+    <label>차수 <input name="seq" type="number" value="{{ m.seq }}"></label>
+    <label>회의명 <input name="title" value="{{ m.title }}"></label>
+    <label>입력 상태
+      <select name="status"><option value="open" {% if m.status=='open' %}selected{% endif %}>입력 중(연구회 입력 허용)</option><option value="closed" {% if m.status=='closed' %}selected{% endif %}>마감(연구회 입력 불가)</option></select></label>
+    <label class="span2">일시 <input name="date_text" value="{{ m.date_text }}" placeholder="2026년 11월 20일(금) 11:00"></label>
+    <label class="span2">장소 <input name="place" value="{{ m.place }}"></label>
+    <label class="span2">방식 <input name="method" value="{{ m.method }}" placeholder="오프라인 회의와 zoom을 통한 온라인 회의 병행"></label>
+    <label>진행자 성명 <input name="host_name" value="{{ m.host_name }}"></label>
+    <label>진행자 직책·소속 <input name="host_title" value="{{ m.host_title }}" placeholder="제53대 한국언론학회 부회장, 전북대학교"></label>
+    <label>활동 내역 기간 <input name="past_label" value="{{ m.past_label }}" placeholder="2026년도 하반기" list="halves"></label>
+    <label>활동 계획 기간 <input name="plan_label" value="{{ m.plan_label }}" placeholder="2027년도 상반기" list="halves"></label>
+    <datalist id="halves">
+      <option value="2026년도 상반기"><option value="2026년도 하반기"><option value="2027년도 상반기"><option value="2027년도 하반기"><option value="2028년도 상반기"><option value="2028년도 하반기">
+    </datalist>
+    <div class="span2"><button class="btn btn-primary" type="submit">기본 정보 저장</button>
+      <span class="help">연구회 보고 표에는 "1. {활동 내역 기간} 활동 내역", "2. {활동 계획 기간} 활동 계획"으로 출력됩니다.</span></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="page-head">
+    <h3>회의 진행 순서(안건)</h3>
+    <button class="btn btn-primary" id="save-agenda">안건 저장</button>
+  </div>
+  <p class="help">번호(Ⅰ, Ⅱ, …)는 순서에 따라 자동으로 붙습니다. 끌어서 순서를 바꾸거나 ▲▼로 이동하세요.
+  <b>일반 안건</b> 본문은 마크다운(줄바꿈, "- " 목록, "| |" 표, "**굵게**")을 지원합니다. 자동 안건은 명단·연구회 제출 내용을 자동으로 채웁니다.</p>
+  <div id="agenda"></div>
+  <div class="toolbar">
+    <button class="btn" data-add="text">+ 일반 안건</button>
+    <button class="btn" data-add="opening">+ 개회</button>
+    <button class="btn" data-add="greeting">+ 회장 인사</button>
+    <button class="btn" data-add="committee">+ 위원 소개</button>
+    <button class="btn" data-add="reports">+ 연구회별 활동 보고</button>
+    <button class="btn" data-add="closing">+ 폐회</button>
+  </div>
+</div>
+
+<div class="card danger">
+  <form method="post" action="/admin/meetings/{{ m.id }}/delete" onsubmit="return confirm('이 회의와 연구회 제출 내용이 모두 삭제됩니다. 계속할까요?')">
+    <button class="btn btn-danger" type="submit">이 회의 삭제</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const KIND_LABELS = {{ KIND_LABELS | tojson }};
+let items = {{ agenda_json | safe }};
+const wrap = document.getElementById('agenda');
+const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ','Ⅺ','Ⅻ'];
+
+function renderAgenda(){
+  wrap.innerHTML = '';
+  items.forEach((a, i) => {
+    const hasBody = true;
+    const el = document.createElement('div');
+    el.className = 'agenda-item'; el.draggable = true; el.dataset.i = i;
+    el.innerHTML = `
+      <div class="agenda-head">
+        <span class="drag">☰</span>
+        <span class="num">${ROMAN[i] || (i+1)}.</span>
+        <input class="title" value="${esc(a.title)}" placeholder="안건 제목">
+        <select class="kind">${Object.entries(KIND_LABELS).map(([k,v]) => `<option value="${k}" ${a.kind===k?'selected':''}>${v}</option>`).join('')}</select>
+        <span class="actions"><button class="btn btn-sm up">▲</button><button class="btn btn-sm down">▼</button><button class="btn btn-sm del">✕</button></span>
+      </div>
+      <div class="agenda-body">
+        <textarea class="body" rows="${a.kind==='text' ? 10 : 3}" placeholder="${a.kind==='text' ? '본문을 입력하세요 (마크다운 지원)' : '추가로 넣을 본문이 있으면 입력 (선택)'}">${esc(a.body||'')}</textarea>
+        <div class="images"></div>
+        <label class="btn btn-sm file-btn">+ 이미지 첨부 <input type="file" accept="image/*" multiple hidden></label>
+        <span class="help">이미지는 본문 아래에 2열로 배치됩니다. 설명(캡션)은 선택.</span>
+      </div>`;
+    renderImages(el.querySelector('.images'), a.images || [], a);
+    wrap.appendChild(el);
+  });
+}
+function renderImages(box, images, a){
+  box.innerHTML = images.map((im, j) => `
+    <div class="img-chip"><img src="/uploads/${esc(im.file)}">
+      <input placeholder="캡션(선택)" value="${esc(im.caption||'')}" data-j="${j}">
+      <button class="btn btn-sm del-img" data-j="${j}" title="삭제">✕</button></div>`).join('');
+}
+function collect(){
+  return [...wrap.querySelectorAll('.agenda-item')].map((el, i) => {
+    const a = items[el.dataset.i];
+    return {title: el.querySelector('.title').value, kind: el.querySelector('.kind').value,
+            body: el.querySelector('.body').value,
+            images: (a.images||[]).map((im, j) => ({file: im.file, caption: (el.querySelector(`.images input[data-j="${j}"]`)||{}).value || ''}))};
+  });
+}
+wrap.addEventListener('click', async e => {
+  const el = e.target.closest('.agenda-item'); if (!el) return;
+  const i = Number(el.dataset.i);
+  if (e.target.classList.contains('del')) { if (!confirm('이 안건을 삭제할까요?')) return; items = collect(); items.splice(i,1); renderAgenda(); }
+  else if (e.target.classList.contains('up') && i>0) { items = collect(); [items[i-1], items[i]] = [items[i], items[i-1]]; renderAgenda(); }
+  else if (e.target.classList.contains('down') && i<items.length-1) { items = collect(); [items[i+1], items[i]] = [items[i], items[i+1]]; renderAgenda(); }
+  else if (e.target.classList.contains('del-img')) { items = collect(); items[i].images.splice(Number(e.target.dataset.j),1); renderAgenda(); }
+});
+wrap.addEventListener('change', async e => {
+  const el = e.target.closest('.agenda-item'); if (!el) return;
+  const i = Number(el.dataset.i);
+  if (e.target.type === 'file') {
+    items = collect();
+    for (const f of e.target.files) {
+      const r = await uploadImage('/admin/upload', f);
+      if (r.file) items[i].images.push({file: r.file, caption: ''}); else toast(r.detail || '업로드 실패');
+    }
+    renderAgenda();
+  } else if (e.target.classList.contains('kind')) { items = collect(); renderAgenda(); }
+});
+document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
+  items = collect();
+  const kind = b.dataset.add;
+  const defaults = {text:'새 안건', opening:'개회 및 성원 보고', greeting:'회장 인사', committee:'연구회 운영위원회 위원 소개', reports:'연구회별 활동 및 향후 계획 보고', closing:'폐회'};
+  items.push({title: defaults[kind], kind, body:'', images:[]}); renderAgenda();
+  wrap.lastElementChild.scrollIntoView({behavior:'smooth'});
+});
+makeSortableBlocks(wrap, () => { items = collectByDom(); renderAgenda(); });
+function collectByDom(){ // DOM 순서대로 재수집
+  return [...wrap.querySelectorAll('.agenda-item')].map(el => {
+    const a = items[el.dataset.i];
+    return {title: el.querySelector('.title').value, kind: el.querySelector('.kind').value, body: el.querySelector('.body').value,
+            images: (a.images||[]).map((im, j) => ({file: im.file, caption: (el.querySelector(`.images input[data-j="${j}"]`)||{}).value || ''}))};
+  });
+}
+document.getElementById('save-agenda').onclick = async () => {
+  items = collect();
+  const r = await postJSON('/admin/meetings/{{ m.id }}/agenda', {items});
+  toast(r.ok ? '안건이 저장되었습니다.' : '저장 실패');
+};
+renderAgenda();
+</script>
+{% endblock %}

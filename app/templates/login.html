@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}관리자 로그인{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h2>관리자 로그인</h2>
+  {% if error %}<p class="alert error">{{ error }}</p>{% endif %}
+  <form method="post" action="/login" class="form">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>아이디 <input name="username" autofocus required autocomplete="username"></label>
+    <label>비밀번호 <input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="btn btn-primary" type="submit">로그인</button>
+  </form>
+  <p class="help">초기 계정: admin / admin1234 (설정 페이지에서 반드시 변경하세요)</p>
+</div>
+{% endblock %}

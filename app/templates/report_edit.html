@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ g.name }} 연구회 활동보고{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2>{{ g.name }} 연구회 · 활동보고 입력</h2>
+    <div class="help">제{{ m.term }}-{{ m.seq }}차 {{ m.title }} ({{ m.date_text }}){% if is_admin %} · <b>관리자 대리 입력</b>{% endif %}</div>
+  </div>
+  <div class="sticky-actions">
+    <a class="btn" href="{{ urls.back }}">목록</a>
+    <a class="btn" href="{{ urls.preview }}" target="_blank" id="preview-btn">미리보기</a>
+    {% if not readonly %}
+    <button class="btn" id="save-draft">임시저장</button>
+    <button class="btn btn-primary" id="save-submit">제출 완료</button>
+    {% endif %}
+  </div>
+</div>
+{% if readonly %}<p class="alert">이 회의는 입력이 마감되었습니다. 내용은 볼 수만 있습니다.</p>{% endif %}
+<p class="help">상태: <span id="status-badge" class="badge {% if submitted %}ok{% endif %}">{{ '제출 완료' if submitted else '작성 중' }}</span>
+ · 임시저장 후 다시 와서 이어서 작성할 수 있습니다. 제출 완료 후에도 마감 전까지는 수정할 수 있습니다.</p>
+
+<div class="card">
+  <h3>연구회 정보</h3>
+  <div class="grid-form">
+    <label>회장 <input id="f-chair" placeholder="홍길동(○○대학교)"></label>
+    <label>총무 <textarea id="f-secs" rows="2" placeholder="홍길동(○○대학교)&#10;두 명 이상이면 줄바꿈"></textarea></label>
+  </div>
+  <label class="inline"><input type="checkbox" id="f-noreport"> 이번 회의에는 보고 내용 없음 (회의자료에 "▶ 보고내용 없음"으로 표시)</label>
+</div>
+
+<div id="halves">
+  <section class="card half" data-half="past">
+    <h3>1. {{ m.past_label or '지난 반기' }} 활동 내역</h3>
+    <p class="help">아래 메뉴에서 활동 유형을 골라 추가하면 회의자료 양식에 맞게 자동 정리됩니다. 자유 서술만 쓰셔도 됩니다.</p>
+    <label>자유 서술(선택) <textarea class="intro" rows="4" placeholder="예: 2026년 가을철 정기학술대회에서 2개 세션을 운영하였음. (줄바꿈·'- ' 목록 사용 가능)"></textarea></label>
+    <div class="items"></div>
+    <div class="toolbar add-menu">
+      <span class="help">항목 추가:</span>
+      <button class="btn btn-sm" data-add="conference">+ 정기학술대회 세션</button>
+      <button class="btn btn-sm" data-add="event">+ 세미나·워크숍·특강</button>
+      <button class="btn btn-sm" data-add="publication">+ 출판·저술</button>
+      <button class="btn btn-sm" data-add="other">+ 기타 활동</button>
+    </div>
+    <div class="images-block">
+      <h4>사진·이미지 (선택)</h4>
+      <div class="images"></div>
+      <label class="btn btn-sm file-btn">+ 이미지 업로드 <input type="file" accept="image/*" multiple hidden></label>
+      <span class="help">행사 사진, 포스터 등. 2열로 배치되며 캡션은 선택입니다.</span>
+    </div>
+  </section>
+
+  <section class="card half" data-half="plan">
+    <h3>2. {{ m.plan_label or '다음 반기' }} 활동 계획</h3>
+    <label>자유 서술(선택) <textarea class="intro" rows="4" placeholder="예: 봄철 정기학술대회 연구회 세션 구성 예정"></textarea></label>
+    <div class="items"></div>
+    <div class="toolbar add-menu">
+      <span class="help">항목 추가:</span>
+      <button class="btn btn-sm" data-add="conference">+ 정기학술대회 세션(계획)</button>
+      <button class="btn btn-sm" data-add="event">+ 세미나·워크숍·특강(계획)</button>
+      <button class="btn btn-sm" data-add="publication">+ 출판·저술(계획)</button>
+      <button class="btn btn-sm" data-add="other">+ 기타 계획</button>
+    </div>
+    <div class="images-block">
+      <h4>사진·이미지 (선택)</h4>
+      <div class="images"></div>
+      <label class="btn btn-sm file-btn">+ 이미지 업로드 <input type="file" accept="image/*" multiple hidden></label>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+window.REPORT = {
+  data: {{ data_json | safe }},
+  urls: {{ urls | tojson }},
+  readonly: {{ 'true' if readonly else 'false' }},
+  submitted: {{ 'true' if submitted else 'false' }},
+};
+</script>
+<script src="/static/report_editor.js"></script>
+{% endblock %}

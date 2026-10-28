@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}연구회 로그인{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h2>연구회 활동보고 입력</h2>
+  <p class="help">연구회를 선택하고 사무국에서 안내받은 접속코드를 입력하세요.</p>
+  {% if error %}<p class="alert error">{{ error }}</p>{% endif %}
+  <form method="post" action="/g/login" class="form">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>연구회
+      <select name="group_id" required>
+        <option value="">— 연구회 선택 —</option>
+        {% for g in groups %}<option value="{{ g.id }}">{{ g.name }} 연구회</option>{% endfor %}
+      </select>
+    </label>
+    <label>접속코드 <input name="code" required autocomplete="off" placeholder="예: AB3K7P" style="text-transform:uppercase"></label>
+    <button class="btn btn-primary" type="submit">입력 페이지로</button>
+  </form>
+</div>
+{% endblock %}

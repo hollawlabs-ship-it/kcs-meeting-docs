@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}취합 현황{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>제{{ m.term }}-{{ m.seq }}차 {{ m.title }} · 연구회 보고 취합 현황</h2>
+  <div>
+    <a class="btn" href="/admin/meetings/{{ m.id }}">회의 편집</a>
+    <a class="btn" href="/admin/meetings/{{ m.id }}/doc" target="_blank">미리보기</a>
+    <a class="btn btn-primary" href="/admin/meetings/{{ m.id }}/pdf">PDF 저장</a>
+  </div>
+</div>
+<p>제출 완료 <b>{{ n_sub }}</b> / {{ n_total }} 연구회 · 입력 상태: {% if m.status == 'open' %}<span class="badge ok">입력 중</span>{% else %}<span class="badge">마감</span>{% endif %}
+<span class="help">(보고 기간: {{ m.past_label or '미설정' }} 활동 내역 / {{ m.plan_label or '미설정' }} 활동 계획)</span></p>
+<table class="table">
+  <thead><tr><th>연구회</th><th>회장</th><th>상태</th><th>최근 수정</th><th></th></tr></thead>
+  <tbody>
+  {% for s in status %}
+  <tr>
+    <td>{{ s.group.name }} 연구회</td>
+    <td>{{ s.group.chair_name }}({{ s.group.chair_affiliation }})</td>
+    <td>{% if s.state == 'submitted' %}<span class="badge ok">제출 완료</span>{% elif s.state == 'draft' %}<span class="badge warn">작성 중</span>{% else %}<span class="badge">미입력</span>{% endif %}</td>
+    <td class="help">{{ s.updated_at }} {{ s.updated_by }}</td>
+    <td class="actions">
+      <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/reports/{{ s.group.id }}">대리 입력/수정</a>
+      <a class="btn btn-sm" href="/g/meetings/{{ m.id }}/preview?gid={{ s.group.id }}" target="_blank">보기</a>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

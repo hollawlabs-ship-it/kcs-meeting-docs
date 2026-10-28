@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}설정{% endblock %}
+{% block content %}
+<h2>설정</h2>
+{% if msg == 'saved' %}<p class="alert ok">저장되었습니다.</p>
+{% elif msg == 'pw_changed' %}<p class="alert ok">비밀번호가 변경되었습니다.</p>
+{% elif msg == 'pw_wrong' %}<p class="alert error">현재 비밀번호가 올바르지 않습니다.</p>
+{% elif msg == 'pw_mismatch' %}<p class="alert error">새 비밀번호가 서로 다르거나 6자 미만입니다.</p>{% endif %}
+
+<div class="grid-2">
+<div class="card">
+  <h3>학회·집행부 정보</h3>
+  <form method="post" action="/admin/settings" enctype="multipart/form-data" class="form">
+    <label>학회명 <input name="society_name" value="{{ st.society_name }}"></label>
+    <label>학회 영문명 <input name="society_name_en" value="{{ st.society_name_en }}"></label>
+    <label>집행부 대수 <input name="term" value="{{ st.term }}" style="max-width:8em"> <span class="help">예: 53 → "제53-1차", "제53대 한국언론학회장"</span></label>
+    <label>회장 성명 <input name="president_name" value="{{ st.president_name }}"></label>
+    <label>회장 소속 <input name="president_affiliation" value="{{ st.president_affiliation }}"></label>
+    <label>표지 하단 문구(선택) <input name="cover_note" value="{{ st.cover_note }}" placeholder="예: TREE · TANDEM · Action Research"></label>
+
+    <h4>학회 로고 <span class="help">(표지, 진행순서 페이지, 각 페이지 번호 옆에 사용)</span></h4>
+    <div class="img-row"><img src="{{ logo_url }}" alt="logo" class="thumb-logo">
+      <div><input type="file" name="logo" accept="image/*"><br><label class="inline"><input type="checkbox" name="reset_logo" value="1"> 기본 로고로 되돌리기</label></div></div>
+
+    <h4>제{{ st.term }}대 이미지 <span class="help">(표지 하단에 삽입. 새 집행부 이미지로 교체 가능)</span></h4>
+    <div class="img-row"><img src="{{ term_image_url }}" alt="term image" class="thumb-term">
+      <div><input type="file" name="term_image" accept="image/*"><br><label class="inline"><input type="checkbox" name="reset_term_image" value="1"> 기본 이미지로 되돌리기</label></div></div>
+
+    <button class="btn btn-primary" type="submit">저장</button>
+  </form>
+</div>
+<div class="card">
+  <h3>관리자 비밀번호 변경</h3>
+  <form method="post" action="/admin/password" class="form">
+    <label>현재 비밀번호 <input type="password" name="current" required></label>
+    <label>새 비밀번호 <input type="password" name="new1" required minlength="6"></label>
+    <label>새 비밀번호 확인 <input type="password" name="new2" required minlength="6"></label>
+    <button class="btn" type="submit">변경</button>
+  </form>
+  <h3 style="margin-top:2em">연구회 접속 안내</h3>
+  <p class="help">연구회별 접속코드는 <a href="/admin/groups">연구회 명단</a> 페이지에서 확인·재발급할 수 있습니다. 연구회장·총무에게 접속 주소와 코드를 보내 주세요.</p>
+</div>
+</div>
+{% endblock %}

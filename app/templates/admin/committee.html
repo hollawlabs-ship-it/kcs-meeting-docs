@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}위원회 명단{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>연구회 운영위원회 명단</h2>
+  <button class="btn btn-primary" id="save">저장</button>
+</div>
+<p class="help">위원장은 <a href="/admin/settings">설정</a>의 회장 정보(현재: {{ st.president_name }}, {{ st.president_affiliation }})가 자동으로 들어갑니다.
+아래 집행부 위원 표는 회의자료 "▍집행부 위원" 표에 그대로 출력됩니다. 행을 끌어서 순서를 바꿀 수 있습니다.</p>
+<table class="table editable" id="tbl">
+  <thead><tr><th style="width:2em"></th><th style="width:10em">직 책</th><th style="width:10em">성 명</th><th>소 속</th><th style="width:5em"></th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<button class="btn" id="add">+ 위원 추가</button>
+<span class="help">예: 차기회장, 부 회 장, 총무이사, 연구이사</span>
+{% endblock %}
+{% block scripts %}
+<script>
+const members = {{ members | tojson }};
+const tbody = document.getElementById('rows');
+function rowHtml(m){
+  return `<tr draggable="true">
+    <td class="drag">☰</td>
+    <td><input data-k="role" value="${esc(m.role||'')}"></td>
+    <td><input data-k="name" value="${esc(m.name||'')}"></td>
+    <td><input data-k="affiliation" value="${esc(m.affiliation||'')}"></td>
+    <td class="actions"><button class="btn btn-sm up" title="위로">▲</button><button class="btn btn-sm down" title="아래로">▼</button><button class="btn btn-sm del" title="삭제">✕</button></td></tr>`;
+}
+members.forEach(m => tbody.insertAdjacentHTML('beforeend', rowHtml(m)));
+document.getElementById('add').onclick = () => { tbody.insertAdjacentHTML('beforeend', rowHtml({})); tbody.lastElementChild.querySelector('input').focus(); };
+makeSortable(tbody);
+document.getElementById('save').onclick = async () => {
+  const out = [...tbody.querySelectorAll('tr')].map(tr => {
+    const o = {}; tr.querySelectorAll('input').forEach(i => o[i.dataset.k] = i.value); return o; });
+  const r = await postJSON('/admin/committee', {members: out});
+  toast(r.ok ? '저장되었습니다.' : '저장 실패');
+};
+</script>
+{% endblock %}

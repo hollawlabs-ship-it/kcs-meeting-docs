@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ g.name }} 연구회{% endblock %}
+{% block content %}
+<h2>{{ g.name }} 연구회</h2>
+<p class="help">회장 {{ g.chair_name }}({{ g.chair_affiliation }}){% if g.secretaries %} · 총무 {{ g.secretaries.replace('\n', ', ') }}{% endif %}</p>
+<table class="table">
+  <thead><tr><th>회의</th><th>일시</th><th>보고 기간</th><th>상태</th><th></th></tr></thead>
+  <tbody>
+  {% for m in meetings %}
+  <tr>
+    <td><strong>제{{ m.term }}-{{ m.seq }}차</strong> {{ m.title }}</td>
+    <td>{{ m.date_text or '—' }}</td>
+    <td class="help">{{ m.past_label }} 활동 내역 / {{ m.plan_label }} 활동 계획</td>
+    <td>
+      {% if m.state == 'submitted' %}<span class="badge ok">제출 완료</span>{% elif m.state == 'draft' %}<span class="badge warn">작성 중</span>{% else %}<span class="badge">미입력</span>{% endif %}
+      {% if m.status != 'open' %}<span class="badge">마감</span>{% endif %}
+    </td>
+    <td class="actions"><a class="btn btn-sm {% if m.status == 'open' %}btn-primary{% endif %}" href="/g/meetings/{{ m.id }}">{% if m.status == 'open' %}입력/수정{% else %}보기{% endif %}</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">입력할 회의가 아직 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
