@@ -5,7 +5,9 @@
 {% if msg == 'saved' %}<p class="alert ok">저장되었습니다.</p>
 {% elif msg == 'pw_changed' %}<p class="alert ok">비밀번호가 변경되었습니다.</p>
 {% elif msg == 'pw_wrong' %}<p class="alert error">현재 비밀번호가 올바르지 않습니다.</p>
-{% elif msg == 'pw_mismatch' %}<p class="alert error">새 비밀번호가 서로 다르거나 6자 미만입니다.</p>{% endif %}
+{% elif msg == 'pw_mismatch' %}<p class="alert error">새 비밀번호가 서로 다르거나 6자 미만입니다.</p>
+{% elif msg == 'gpw_changed' %}<p class="alert ok">연구회 공통 비밀번호가 설정되었습니다. 이전에 로그인한 연구회는 새 비밀번호로 다시 로그인해야 합니다.</p>
+{% elif msg == 'gpw_mismatch' %}<p class="alert error">연구회 비밀번호가 서로 다르거나 4자 미만입니다.</p>{% endif %}
 
 <div class="grid-2">
 <div class="card">
@@ -37,8 +39,16 @@
     <label>새 비밀번호 확인 <input type="password" name="new2" required minlength="6"></label>
     <button class="btn" type="submit">변경</button>
   </form>
-  <h3 style="margin-top:2em">연구회 접속 안내</h3>
-  <p class="help">연구회별 접속코드는 <a href="/admin/groups">연구회 명단</a> 페이지에서 확인·재발급할 수 있습니다. 연구회장·총무에게 접속 주소와 코드를 보내 주세요.</p>
+  <h3 style="margin-top:2em">연구회 공통 비밀번호</h3>
+  <p class="help">모든 연구회가 같은 비밀번호로 로그인합니다(로그인 화면에서 자기 연구회 선택).
+    현재 상태: {% if group_pw_set %}<span class="badge ok">설정됨</span>{% else %}<span class="badge warn">미설정 — 연구회 로그인 불가</span>{% endif %}<br>
+    비밀번호는 암호화되어 저장되므로 다시 볼 수 없습니다. 잊었거나 유출되면 새로 설정하세요(기존 연구회 로그인은 자동 해제).</p>
+  <form method="post" action="/admin/group-password" class="form">
+    <label>새 공통 비밀번호 <input type="password" name="gpw1" required minlength="4" autocomplete="new-password"></label>
+    <label>새 공통 비밀번호 확인 <input type="password" name="gpw2" required minlength="4" autocomplete="new-password"></label>
+    <button class="btn" type="submit">{% if group_pw_set %}변경{% else %}설정{% endif %}</button>
+  </form>
+  <p class="help">연구회장·총무에게 안내할 내용: 접속 주소 <code>{{ request.base_url }}g/login</code> 와 공통 비밀번호.</p>
 </div>
 </div>
 {% endblock %}

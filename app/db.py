@@ -142,6 +142,7 @@ DEFAULT_SETTINGS = {
     "logo_file": "",        # 비어 있으면 static/img/logo_ksjcs.png 사용
     "term_image_file": "",  # 비어 있으면 static/img/term53.svg 사용
     "cover_note": "",
+    "group_pw_ver": "1",    # 연구회 공통 비밀번호를 바꿀 때마다 증가 → 기존 연구회 세션 무효화
 }
 
 # 제53대 집행부(2026.10 집행부 워크숍 회의록 기준). 차기회장 등은 관리자 페이지에서 추가.
@@ -229,6 +230,11 @@ def init_db(pw_hasher) -> None:
                 "INSERT INTO users(username, pw_hash, role, created_at) VALUES(?,?,?,?)",
                 ("admin", pw_hasher(os.environ.get("MEETING_DOCS_ADMIN_PASSWORD") or "admin1234"), "admin", now_iso()),
             )
+
+        # 연구회 공통 비밀번호: 아직 없고 환경변수가 있으면 그 값으로 초기화
+        env_gpw = os.environ.get("MEETING_DOCS_GROUP_PASSWORD")
+        if env_gpw and not get_setting(conn, "group_pw_hash"):
+            set_setting(conn, "group_pw_hash", pw_hasher(env_gpw))
 
         if conn.execute("SELECT COUNT(*) FROM committee_members").fetchone()[0] == 0:
             for i, (role, name, aff) in enumerate(SEED_COMMITTEE):

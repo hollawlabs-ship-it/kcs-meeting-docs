@@ -90,15 +90,20 @@ def group_login_form(request: Request, next: str = "/g"):
 
 
 @app.post("/g/login")
-def group_login(request: Request, group_id: int = Form(...), code: str = Form(...), next: str = Form("/g")):
+def group_login(request: Request, group_id: int = Form(...), password: str = Form(...), next: str = Form("/g")):
     with D.db() as conn:
         g = D.row(conn, "SELECT * FROM groups WHERE id=? AND active=1", (group_id,))
         groups = D.rows(conn, "SELECT id, name FROM groups WHERE active=1 ORDER BY sort, id")
-    if not g or g["access_code"].strip().upper() != code.strip().upper():
-        return render(request, "group_login.html", groups=groups, next=next, error="접속코드가 올바르지 않습니다.")
+        pw_hash = D.get_setting(conn, "group_pw_hash")
+        ver = D.get_setting(conn, "group_pw_ver", "1")
+    if not pw_hash:
+        return render(request, "group_login.html", groups=groups, next=next,
+                      error="연구회 비밀번호가 아직 설정되지 않았습니다. 사무국에 문의하세요.")
+    if not g or not auth.verify_password(password, pw_hash):
+        return render(request, "group_login.html", groups=groups, next=next, error="비밀번호가 올바르지 않습니다.")
     target = next if next.startswith("/") else "/g"
     return set_cookie(RedirectResponse(target, status_code=303),
-                      {"role": "group", "group_id": g["id"], "group_name": g["name"]}, request)
+                      {"role": "group", "group_id": g["id"], "group_name": g["name"], "v": ver}, request)
 
 
 # ================================================================ 이미지 업로드
@@ -165,7 +170,7 @@ def admin_home(request: Request, s=Depends(auth.require_admin)):
 def settings_form(request: Request, s=Depends(auth.require_admin), msg: str = ""):
     with D.db() as conn:
         st = D.all_settings(conn)
-    return render(request, "admin/settings.html", st=st, msg=msg,
+    return render(request, "admin/settings.html", st=st, msg=msg, group_pw_set=bool(st.get("group_pw_hash")),
                   logo_url=docgen.image_url(docgen.logo_ref(st)),
                   term_image_url=docgen.image_url(docgen.term_image_ref(st)))
 
@@ -207,6 +212,18 @@ def change_password(request: Request, s=Depends(auth.require_admin),
             return RedirectResponse("/admin/settings?msg=pw_mismatch", status_code=303)
         conn.execute("UPDATE users SET pw_hash=? WHERE id=?", (auth.hash_password(new1), user["id"]))
     return RedirectResponse("/admin/settings?msg=pw_changed", status_code=303)
+
+
+@app.post("/admin/group-password")
+def change_group_password(request: Request, s=Depends(auth.require_admin),
+                          gpw1: str = Form(...), gpw2: str = Form(...)):
+    if gpw1 != gpw2 or len(gpw1) < 4:
+        return RedirectResponse("/admin/settings?msg=gpw_mismatch", status_code=303)
+    with D.db() as conn:
+        D.set_setting(conn, "group_pw_hash", auth.hash_password(gpw1))
+        ver = int(D.get_setting(conn, "group_pw_ver", "1") or 1) + 1
+        D.set_setting(conn, "group_pw_ver", str(ver))
+    return RedirectResponse("/admin/settings?msg=gpw_changed", status_code=303)
 
 
 # ---- 위원회 명단
@@ -270,14 +287,6 @@ async def groups_save(request: Request, s=Depends(auth.require_admin)):
         else:
             conn.execute("DELETE FROM groups")
     return {"ok": True}
-
-
-@app.post("/admin/groups/{gid}/code")
-def regen_code(gid: int, s=Depends(auth.require_admin)):
-    code = D.new_access_code()
-    with D.db() as conn:
-        conn.execute("UPDATE groups SET access_code=? WHERE id=?", (code, gid))
-    return {"ok": True, "code": code}
 
 
 # ---- 회의

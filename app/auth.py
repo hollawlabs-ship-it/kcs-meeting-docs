@@ -79,4 +79,11 @@ def require_group(request: Request) -> dict:
     s = read_session(request)
     if not s or s.get("role") not in ("group", "admin"):
         raise RedirectToLogin("/g/login?next=" + request.url.path)
+    if s.get("role") == "group":
+        # 공통 비밀번호가 바뀌면 그 전에 로그인한 연구회 세션은 무효
+        from .db import db, get_setting
+        with db() as conn:
+            ver = get_setting(conn, "group_pw_ver", "1")
+        if s.get("v") != ver:
+            raise RedirectToLogin("/g/login?next=" + request.url.path)
     return s
