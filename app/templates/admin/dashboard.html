@@ -21,6 +21,10 @@
       <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/reports">취합</a>
       <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/doc" target="_blank">미리보기</a>
       <a class="btn btn-sm btn-primary" href="/admin/meetings/{{ m.id }}/pdf">PDF</a>
+      <form method="post" action="/admin/meetings/{{ m.id }}/delete" class="inline-form"
+            onsubmit="return confirm('제{{ m.term }}-{{ m.seq }}차 {{ m.title }} 회의와 연구회 제출 내용({{ m.n_submitted + m.n_draft }}건)이 모두 삭제됩니다. 계속할까요?')">
+        <button class="btn btn-sm btn-danger-outline" type="submit" title="회의 삭제">삭제</button>
+      </form>
     </td>
   </tr>
   {% else %}

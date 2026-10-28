@@ -33,6 +33,8 @@ label.inline { display: inline-flex; align-items: center; gap: .4rem; font-weigh
 .btn:hover { background: #f1f4f8; text-decoration: none; } .btn:disabled { opacity: .5; cursor: default; }
 .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; } .btn-primary:hover { background: #0b4a72; }
 .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-danger-outline { color: var(--danger); border-color: #f1c4c0; } .btn-danger-outline:hover { background: #fdecec; }
+.inline-form { display: inline; margin-left: .2rem; }
 .btn-sm { padding: .2rem .55rem; font-size: .85em; } .btn-lg { padding: .8rem 1.5rem; font-size: 1.05em; }
 .file-btn input { display: none; }
 .toolbar { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; }
