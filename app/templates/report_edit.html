@@ -19,7 +19,18 @@
 <p class="help">상태: <span id="status-badge" class="badge {% if submitted %}ok{% endif %}">{{ '제출 완료' if submitted else '작성 중' }}</span>
  · 임시저장 후 다시 와서 이어서 작성할 수 있습니다. 제출 완료 후에도 마감 전까지는 수정할 수 있습니다.</p>
 
-<div class="card">
+<div class="card" id="attend-card">
+  <h3>연구회 운영위원회 참석 여부</h3>
+  <p class="help">제{{ m.term }}-{{ m.seq }}차 운영위원회({{ m.date_text }})에 참석하시는지 표시해 주세요.</p>
+  <div class="attend-options">
+    <label class="inline"><input type="radio" name="attend" value="chair"> 참석 (회장)</label>
+    <label class="inline"><input type="radio" name="attend" value="secretary"> 참석 (총무)</label>
+    <label class="inline"><input type="radio" name="attend" value="absent"> 불참</label>
+  </div>
+  <label class="attend-name">참석자 성명(선택) <input id="f-attendee" placeholder="예: 홍길동"></label>
+</div>
+
+<div class="card" id="info-card">
   <h3>연구회 정보</h3>
   <div class="grid-form">
     <label>회장 <input id="f-chair" placeholder="홍길동(○○대학교)"></label>

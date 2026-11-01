@@ -35,6 +35,9 @@ label.inline { display: inline-flex; align-items: center; gap: .4rem; font-weigh
 .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
 .btn-danger-outline { color: var(--danger); border-color: #f1c4c0; } .btn-danger-outline:hover { background: #fdecec; }
 .inline-form { display: inline; margin-left: .2rem; }
+.attend-options { display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; margin: .4rem 0 .6rem; }
+.attend-name { display: block; max-width: 22rem; font-weight: 600; font-size: .92em; }
+.attend-name input { display: block; width: 100%; margin-top: .2rem; }
 .btn-sm { padding: .2rem .55rem; font-size: .85em; } .btn-lg { padding: .8rem 1.5rem; font-size: 1.05em; }
 .file-btn input { display: none; }
 .toolbar { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; }

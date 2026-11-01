@@ -388,10 +388,17 @@ def reports_status(mid: int, request: Request, s=Depends(auth.require_admin)):
         state = "none"
         if r:
             state = "submitted" if r["submitted"] else "draft"
+        rd = (D.loads(r["data"], {}) if r else {}) or {}
+        att = rd.get("attendance", "")
         status.append({"group": g, "state": state, "updated_at": r["updated_at"] if r else "",
-                       "updated_by": r["updated_by"] if r else ""})
+                       "updated_by": r["updated_by"] if r else "",
+                       "attendance": att, "attendance_label": ATTENDANCE_LABELS.get(att, ""),
+                       "attendee": rd.get("attendee", "")})
     n_sub = sum(1 for x in status if x["state"] == "submitted")
-    return render(request, "admin/reports.html", m=m, status=status, n_sub=n_sub, n_total=len(status))
+    att_count = {k: sum(1 for x in status if x["attendance"] == k) for k in ATTENDANCE_LABELS}
+    att_count["none"] = sum(1 for x in status if not x["attendance"])
+    return render(request, "admin/reports.html", m=m, status=status, n_sub=n_sub, n_total=len(status),
+                  att_count=att_count)
 
 
 @app.get("/admin/meetings/{mid}/reports/{gid}", response_class=HTMLResponse)
@@ -513,6 +520,9 @@ def _report_editor(request: Request, mid: int, gid: int, admin: bool) -> HTMLRes
                   readonly=(not admin and m["status"] != "open"))
 
 
+ATTENDANCE_LABELS = {"chair": "참석(회장)", "secretary": "참석(총무)", "absent": "불참"}
+
+
 async def _report_save(request: Request, mid: int, gid: int, by: str):
     payload = await request.json()
     data = payload.get("data") or {}
@@ -521,6 +531,8 @@ async def _report_save(request: Request, mid: int, gid: int, by: str):
         "chair": str(data.get("chair", "")).strip(),
         "secretaries": str(data.get("secretaries", "")).strip(),
         "no_report": bool(data.get("no_report")),
+        "attendance": data.get("attendance") if data.get("attendance") in ATTENDANCE_LABELS else "",
+        "attendee": str(data.get("attendee", "")).strip()[:50],
         "past": _clean_half(data.get("past")),
         "plan": _clean_half(data.get("plan")),
     }

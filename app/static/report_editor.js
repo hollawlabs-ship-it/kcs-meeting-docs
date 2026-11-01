@@ -14,6 +14,18 @@
   document.getElementById('f-chair').value = state.chair || '';
   document.getElementById('f-secs').value = state.secretaries || '';
   document.getElementById('f-noreport').checked = !!state.no_report;
+  const attendRadios = [...document.querySelectorAll('input[name=attend]')];
+  const attendeeEl = document.getElementById('f-attendee');
+  attendRadios.forEach(r => { r.checked = r.value === (state.attendance || ''); });
+  attendeeEl.value = state.attendee || '';
+  const attendValue = () => (attendRadios.find(r => r.checked) || {}).value || '';
+  const syncAttendee = () => { attendeeEl.closest('label').hidden = !['chair', 'secretary'].includes(attendValue()); };
+  syncAttendee();
+  for (const id of ['attend-card', 'info-card']) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', markDirty);
+    el.addEventListener('change', () => { markDirty(); syncAttendee(); });
+  }
 
   function talkRow(t, si, ti) {
     return `<div class="talk" data-si="${si}" data-ti="${ti}">
@@ -127,6 +139,8 @@
     state.chair = document.getElementById('f-chair').value;
     state.secretaries = document.getElementById('f-secs').value;
     state.no_report = document.getElementById('f-noreport').checked;
+    state.attendance = attendValue();
+    state.attendee = ['chair', 'secretary'].includes(state.attendance) ? attendeeEl.value : '';
     collectHalf('past'); collectHalf('plan');
   }
 
@@ -200,7 +214,14 @@
   }
   const sd = document.getElementById('save-draft'), ss = document.getElementById('save-submit');
   if (sd) sd.onclick = () => save(false);
-  if (ss) ss.onclick = () => { if (confirm('제출 완료로 표시할까요? (마감 전까지 다시 수정할 수 있습니다)')) save(true); };
+  if (ss) ss.onclick = () => {
+    if (!attendValue()) {
+      toast('운영위원회 참석 여부를 먼저 선택해 주세요.', 3000);
+      document.getElementById('attend-card').scrollIntoView({behavior: 'smooth', block: 'center'});
+      return;
+    }
+    if (confirm('제출 완료로 표시할까요? (마감 전까지 다시 수정할 수 있습니다)')) save(true);
+  };
   document.getElementById('preview-btn').addEventListener('click', async e => {
     if (R.readonly || !dirty) return;
     e.preventDefault();
@@ -209,5 +230,5 @@
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
   renderHalf('past'); renderHalf('plan');
-  if (R.readonly) document.querySelectorAll('#f-chair,#f-secs,#f-noreport').forEach(el => el.disabled = true);
+  if (R.readonly) document.querySelectorAll('#f-chair,#f-secs,#f-noreport,#f-attendee,input[name=attend]').forEach(el => el.disabled = true);
 })();

@@ -10,15 +10,17 @@
   </div>
 </div>
 <p>제출 완료 <b>{{ n_sub }}</b> / {{ n_total }} 연구회 · 입력 상태: {% if m.status == 'open' %}<span class="badge ok">입력 중</span>{% else %}<span class="badge">마감</span>{% endif %}
+<br>운영위원회 참석: 회장 참석 <b>{{ att_count.chair }}</b> · 총무 참석 <b>{{ att_count.secretary }}</b> · 불참 <b>{{ att_count.absent }}</b> · 미응답 <b>{{ att_count.none }}</b>
 <span class="help">(보고 기간: {{ m.past_label or '미설정' }} 활동 내역 / {{ m.plan_label or '미설정' }} 활동 계획)</span></p>
 <table class="table">
-  <thead><tr><th>연구회</th><th>회장</th><th>상태</th><th>최근 수정</th><th></th></tr></thead>
+  <thead><tr><th>연구회</th><th>회장</th><th>상태</th><th>운영위 참석</th><th>최근 수정</th><th></th></tr></thead>
   <tbody>
   {% for s in status %}
   <tr>
     <td>{{ s.group.name }} 연구회</td>
     <td>{{ s.group.chair_name }}({{ s.group.chair_affiliation }})</td>
     <td>{% if s.state == 'submitted' %}<span class="badge ok">제출 완료</span>{% elif s.state == 'draft' %}<span class="badge warn">작성 중</span>{% else %}<span class="badge">미입력</span>{% endif %}</td>
+    <td>{% if s.attendance == 'absent' %}<span class="badge warn">불참</span>{% elif s.attendance %}<span class="badge ok">{{ s.attendance_label }}</span>{% if s.attendee %} {{ s.attendee }}{% endif %}{% else %}<span class="help">미응답</span>{% endif %}</td>
     <td class="help">{{ s.updated_at }} {{ s.updated_by }}</td>
     <td class="actions">
       <a class="btn btn-sm" href="/admin/meetings/{{ m.id }}/reports/{{ s.group.id }}">대리 입력/수정</a>
