@@ -19,7 +19,36 @@
   attendRadios.forEach(r => { r.checked = r.value === (state.attendance || ''); });
   attendeeEl.value = state.attendee || '';
   const attendValue = () => (attendRadios.find(r => r.checked) || {}).value || '';
-  const syncAttendee = () => { attendeeEl.closest('label').hidden = !['chair', 'secretary'].includes(attendValue()); };
+  const delegateEl = document.getElementById('f-delegate');
+  const delegateToRadios = [...document.querySelectorAll('input[name=delegate_to]')];
+  const proxyIds = {name: 'f-proxy-name', affil: 'f-proxy-affil', contact: 'f-proxy-contact'};
+  const proxyEl = k => document.getElementById(proxyIds[k]);
+  delegateEl.checked = !!state.delegate;
+  delegateToRadios.forEach(r => { r.checked = r.value === (state.delegate_to || ''); });
+  const proxy = state.proxy || {};
+  for (const k in proxyIds) proxyEl(k).value = proxy[k] || '';
+  const delegateToValue = () => (delegateToRadios.find(r => r.checked) || {}).value || '';
+  const syncAttendee = () => {
+    const a = attendValue();
+    attendeeEl.closest('label').hidden = !['chair', 'secretary'].includes(a);
+    document.getElementById('delegate-box').hidden = a !== 'absent';
+    document.getElementById('delegate-to-box').hidden = !(a === 'absent' && delegateEl.checked);
+    document.getElementById('proxy-box').hidden = !(a === 'absent' && delegateEl.checked && delegateToValue() === 'third');
+  };
+  // 제출 전 필수 항목 확인. 문제가 있으면 안내 문구, 없으면 ''
+  function attendProblem() {
+    const a = attendValue();
+    if (!a) return '운영위원회 참석 여부를 먼저 선택해 주세요.';
+    if (a !== 'absent') return '';
+    if (!delegateEl.checked) return '불참하시는 경우 위임 여부(위임합니다)에 체크해 주세요.';
+    const t = delegateToValue();
+    if (!t) return '위임받는 자(학회장 또는 제3자)를 선택해 주세요.';
+    if (t === 'third') {
+      const msg = {name: '수임인 성명을 입력해 주세요.', affil: '수임인 소속 및 직책을 입력해 주세요.', contact: '수임인 연락처를 입력해 주세요.'};
+      for (const k in proxyIds) if (!proxyEl(k).value.trim()) return msg[k];
+    }
+    return '';
+  }
   syncAttendee();
   for (const id of ['attend-card', 'info-card']) {
     const el = document.getElementById(id);
@@ -141,6 +170,11 @@
     state.no_report = document.getElementById('f-noreport').checked;
     state.attendance = attendValue();
     state.attendee = ['chair', 'secretary'].includes(state.attendance) ? attendeeEl.value : '';
+    const absent = state.attendance === 'absent';
+    state.delegate = absent && delegateEl.checked;
+    state.delegate_to = state.delegate ? delegateToValue() : '';
+    state.proxy = state.delegate_to === 'third'
+      ? {name: proxyEl('name').value, affil: proxyEl('affil').value, contact: proxyEl('contact').value} : {};
     collectHalf('past'); collectHalf('plan');
   }
 
@@ -215,8 +249,9 @@
   const sd = document.getElementById('save-draft'), ss = document.getElementById('save-submit');
   if (sd) sd.onclick = () => save(false);
   if (ss) ss.onclick = () => {
-    if (!attendValue()) {
-      toast('운영위원회 참석 여부를 먼저 선택해 주세요.', 3000);
+    const problem = attendProblem();
+    if (problem) {
+      toast(problem, 3500);
       document.getElementById('attend-card').scrollIntoView({behavior: 'smooth', block: 'center'});
       return;
     }
@@ -230,5 +265,5 @@
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
   renderHalf('past'); renderHalf('plan');
-  if (R.readonly) document.querySelectorAll('#f-chair,#f-secs,#f-noreport,#f-attendee,input[name=attend]').forEach(el => el.disabled = true);
+  if (R.readonly) document.querySelectorAll('#f-chair,#f-secs,#f-noreport,#f-attendee,input[name=attend],#f-delegate,input[name=delegate_to],#f-proxy-name,#f-proxy-affil,#f-proxy-contact').forEach(el => el.disabled = true);
 })();

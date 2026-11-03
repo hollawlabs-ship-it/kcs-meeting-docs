@@ -393,7 +393,10 @@ def reports_status(mid: int, request: Request, s=Depends(auth.require_admin)):
         status.append({"group": g, "state": state, "updated_at": r["updated_at"] if r else "",
                        "updated_by": r["updated_by"] if r else "",
                        "attendance": att, "attendance_label": ATTENDANCE_LABELS.get(att, ""),
-                       "attendee": rd.get("attendee", "")})
+                       "attendee": rd.get("attendee", ""),
+                       "delegate": bool(rd.get("delegate")),
+                       "delegate_label": DELEGATE_LABELS.get(rd.get("delegate_to", ""), ""),
+                       "proxy": rd.get("proxy") or {}})
     n_sub = sum(1 for x in status if x["state"] == "submitted")
     att_count = {k: sum(1 for x in status if x["attendance"] == k) for k in ATTENDANCE_LABELS}
     att_count["none"] = sum(1 for x in status if not x["attendance"])
@@ -521,6 +524,16 @@ def _report_editor(request: Request, mid: int, gid: int, admin: bool) -> HTMLRes
 
 
 ATTENDANCE_LABELS = {"chair": "참석(회장)", "secretary": "참석(총무)", "absent": "불참"}
+DELEGATE_LABELS = {"president": "학회장에 위임", "third": "제3자에게 위임"}
+
+
+def _clean_delegation(data: dict) -> dict:
+    """불참 시 위임 정보. 불참이 아니면 비워 둔다."""
+    delegate = data.get("attendance") == "absent" and bool(data.get("delegate"))
+    to = data.get("delegate_to") if delegate and data.get("delegate_to") in DELEGATE_LABELS else ""
+    p = data.get("proxy") or {}
+    proxy = {k: str(p.get(k, "")).strip()[:100] for k in ("name", "affil", "contact")} if to == "third" else {}
+    return {"delegate": delegate, "delegate_to": to, "proxy": proxy}
 
 
 async def _report_save(request: Request, mid: int, gid: int, by: str):
@@ -533,6 +546,7 @@ async def _report_save(request: Request, mid: int, gid: int, by: str):
         "no_report": bool(data.get("no_report")),
         "attendance": data.get("attendance") if data.get("attendance") in ATTENDANCE_LABELS else "",
         "attendee": str(data.get("attendee", "")).strip()[:50],
+        **_clean_delegation(data),
         "past": _clean_half(data.get("past")),
         "plan": _clean_half(data.get("plan")),
     }

@@ -28,6 +28,28 @@
     <label class="inline"><input type="radio" name="attend" value="absent"> 불참</label>
   </div>
   <label class="attend-name">참석자 성명(선택) <input id="f-attendee" placeholder="예: 홍길동"></label>
+
+  <div id="delegate-box" class="delegate-box" hidden>
+    <h4>위임 여부 <span class="req">*</span></h4>
+    <label class="inline"><input type="checkbox" id="f-delegate"> 위임합니다</label>
+
+    <div id="delegate-to-box" hidden>
+      <h4>위임받는 자 <span class="req">*</span></h4>
+      <p class="help">본인은 사정에 의하여 {{ settings.society_name or '한국언론학회' }} 제{{ m.term }}-{{ m.seq }}차 연구회 운영위원회에 참석할 수 없음에 따라
+        본인에게 부여된 모든 권한을 아래 피위임자에게 위임합니다.</p>
+      <div class="attend-options">
+        <label class="inline"><input type="radio" name="delegate_to" value="president"> 학회장에 위임</label>
+        <label class="inline"><input type="radio" name="delegate_to" value="third"> 제3자에게 위임</label>
+      </div>
+    </div>
+
+    <div id="proxy-box" class="proxy-box" hidden>
+      <div class="proxy-head">수임인</div>
+      <label>수임인 성명 <span class="req">*</span> <input id="f-proxy-name"></label>
+      <label>수임인 소속 및 직책 <span class="req">*</span> <input id="f-proxy-affil" placeholder="예: ○○대학교 교수"></label>
+      <label>수임인 연락처 <span class="req">*</span> <input id="f-proxy-contact" placeholder="예: 010-0000-0000"></label>
+    </div>
+  </div>
 </div>
 
 <div class="card" id="info-card">

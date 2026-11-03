@@ -38,6 +38,14 @@ label.inline { display: inline-flex; align-items: center; gap: .4rem; font-weigh
 .attend-options { display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; margin: .4rem 0 .6rem; }
 .attend-name { display: block; max-width: 22rem; font-weight: 600; font-size: .92em; }
 .attend-name input { display: block; width: 100%; margin-top: .2rem; }
+.attend-name[hidden], .proxy-box[hidden], .delegate-box[hidden] { display: none; }
+.delegate-box { border-top: 1px solid #e3e6ea; margin-top: .8rem; padding-top: .4rem; }
+.delegate-box h4 { margin: .8rem 0 .3rem; } .req { color: #c62828; }
+.proxy-box { border: 1px solid #d6dde3; border-radius: 6px; margin-top: .8rem; overflow: hidden; max-width: 30rem; }
+.proxy-head { background: #0b5d7e; color: #fff; padding: .45rem .8rem; font-weight: 600; }
+.proxy-box label { display: block; padding: .5rem .8rem 0; font-weight: 600; font-size: .92em; }
+.proxy-box label:last-child { padding-bottom: .8rem; }
+.proxy-box input { display: block; width: 100%; margin-top: .2rem; }
 .btn-sm { padding: .2rem .55rem; font-size: .85em; } .btn-lg { padding: .8rem 1.5rem; font-size: 1.05em; }
 .file-btn input { display: none; }
 .toolbar { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; }
